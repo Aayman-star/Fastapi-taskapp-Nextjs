@@ -76,3 +76,14 @@ To learn more about Next.js, take a look at the following resources:
 - [FastAPI Documentation](https://fastapi.tiangolo.com/) - learn about FastAPI features and API.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+Personal Edits
+At this point the app has nextjs front-end ,python fastapi backend and sqlite3 as the database.
+The app has the following features:
+--Adding a todo
+--Marking a todo as checked,the checked todo has a strike-through line
+--Deleting an individual todo
+--Deleting all todos through one Delete Button
+--Editing individual todos
+
+There is room for the addition of more features,and off course user indentification

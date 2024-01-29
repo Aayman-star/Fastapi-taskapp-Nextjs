@@ -72,6 +72,18 @@ def check_task(task_id:int,db:Session=Depends(get_db)):
     db.refresh(todo)
     return todo
 
+@app.put("/update-todo/{task_id}")
+def update_todo(task_id:int,text:str,db:Session=Depends(get_db)):
+    print(task_id,text)
+    """Update Todo Description"""
+    todo = db.query(Todos).filter(Todos.id == task_id).first()
+    if todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    todo.text = text
+    db.commit()
+    db.refresh(todo)
+    return todo
+
 @app.delete("/del/{todo_id}")
 def delete_todo(todo_id:int,db:Session=Depends(get_db)):
     """Delete a todo from the database"""

@@ -20,6 +20,7 @@ const TodoInput = () => {
   const [text, setText] = useState<string>("");
   const [textDisplay, setTextDisplay] = useState<string>("");
   const [todoList, setTodoList] = useState<Array<dataToReceive>>([]);
+  const [edit, setEdit] = useState<boolean>(false);
   useEffect(() => {
     fetchTodos().then((data) => setTodoList(data));
   }, []);
@@ -57,6 +58,7 @@ const TodoInput = () => {
     const newList = await fetchTodos();
     setTodoList(newList);
   };
+
   return (
     <div className="w-full">
       <div className="w-full flex space-x-4">

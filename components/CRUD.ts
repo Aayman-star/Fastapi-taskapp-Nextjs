@@ -4,6 +4,7 @@ type Data = {
 };
 type Data1 = {
   id: number;
+  text: string;
 };
 type todo = {
   id: number;
@@ -71,6 +72,24 @@ export const checkTodo = async (id: number) => {
 export const deleteAll = async () => {
   const response = await fetch(`${BASE_URL}/delete-all`, {
     method: "DELETE",
+  });
+  if (response.ok) {
+    return response.json();
+  } else {
+    return "Error";
+  }
+};
+export const editTodo = async ({ id, text }: Data1) => {
+  console.log(id, text, "I am here in the edit function");
+  const response = await fetch(`${BASE_URL}/update-todo/${id}?text=${text}`, {
+    method: "PUT",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      task_id: id,
+      text: text,
+    }),
   });
   if (response.ok) {
     return response.json();
