@@ -39,16 +39,6 @@ const TaskDisplay = ({ item, handleDelete, handleCheck }: displayProps) => {
     setEdit(false);
   };
 
-  // const handleBlur = async (id: number, text: string) => {
-  //   setEdit(false);
-  //   console.log(`ID ${id} Text ${text}`);
-  //   const updatedTodo: updateTodo = {
-  //     id: id,
-  //     text: text,
-  //   };
-  //   const response = await editTodo({ ...updatedTodo });
-  // };
-  //const inputref = React.useRef<HTMLInputElement>(null);
   return (
     <div
       onDoubleClick={() => setEdit(true)}
@@ -59,7 +49,6 @@ const TaskDisplay = ({ item, handleDelete, handleCheck }: displayProps) => {
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            // onBlur={() => handleBlur(item.id, text)}
             ref={inputRef}
           />
         </form>
