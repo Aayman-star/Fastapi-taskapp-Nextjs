@@ -89,3 +89,8 @@ The app has the following features:
 - Editing individual todos
 
 There is room for the addition of more features,and off course user indentification
+
+## Updates
+
+- Initially the app employed sqlite3 database but now it has been shifted to neon postgres database
+- Additionally sqlmodel model is implemented to create data models for todo items instead of Base model in pydantic.
