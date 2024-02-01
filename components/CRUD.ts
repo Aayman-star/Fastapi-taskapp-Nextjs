@@ -47,7 +47,7 @@ export const deleteTodo = async (id: number) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      task_id: id,
+      todo_id: id,
     }),
   });
   if (response.ok) {
