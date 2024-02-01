@@ -1,10 +1,13 @@
+import select
 from fastapi import FastAPI,Body,Depends,HTTPException
 from sqlalchemy.orm import Session
 from models import TodoItem
-from database import SessionLocal,engine,Todos
+from database import engine,Todo,TodoCreate,TodoRead,TodoUpdate
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 import uvicorn
+from sqlmodel import Session, delete,select
+from typing import List
 
 app: FastAPI = FastAPI()
 
@@ -18,89 +21,95 @@ app.add_middleware(
 )
 
 # Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_session():
+    with Session(engine) as session:
+        yield session
+
 
 @app.get("/api/python")
 def hello_world():
     return {"message": "Hello World"}
-@app.get("/")
-def read_todos(db:Session = Depends(get_db)):
-    """Get all Todos"""
-    todos = db.query(Todos).order_by(Todos.id)
-    if todos.first() is None:
-        raise HTTPException(status_code=404, detail="No todos found")
-    return todos.all()
 
-@app.get("/todo/{todo_id}")
-def get_todo(todo_id:int,db:Session=Depends(get_db)):
+@app.get("/api",response_model=List[TodoRead])
+def read_todos(*,session:Session=Depends(get_session)):
+    """Get all Todos"""
+    todos = session.exec(select(Todo).order_by(Todo.id)).all()
+    if todos is None:
+        raise HTTPException(status_code=404, detail="No todos found")
+    return todos
+
+
+@app.get("/api/todo/{todo_id}",response_model=TodoRead)
+def get_todo(*,session:Session = Depends(get_session),todo_id:int):
     """Get a single todo from the database"""
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+    todo = session.get(Todo, todo_id)  # Get the todo item from the database
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
-@app.post("/api/create-todo")
-def create_todo(todo:TodoItem,db:Session=Depends(get_db)):
+@app.post("/api/create-todo",response_model=TodoRead)
+def create_todo(*,session:Session = Depends(get_session),todo:TodoCreate):
     """Creating and storing a todo item in the database"""
-    todo_item = Todos(text=todo.text,is_complete=todo.is_complete)
-    db.add(todo_item)
-    db.commit()
-    db.refresh(todo_item)
+    todo_item = Todo.model_validate(todo)
+    session.add(todo_item)
+    session.commit()
+    session.refresh(todo_item)
     return todo_item
 
-@app.get("/complete-todos")
-def get_complete_todos(db: Session = Depends(get_db)):
+@app.get("/api/complete-todos",response_model=List[TodoRead])
+def get_complete_todos(*,session:Session = Depends(get_session)):
     """Get all complete todos"""
-    todos = db.query(Todos).filter(Todos.is_complete == True).order_by(Todos.id)
-    if todos.first() is None:
+    todos = session.exec(select(Todo).where(Todo.is_complete == True)).all()
+    if todos is None:
         raise HTTPException(status_code=404, detail="No todos found")
-    return todos.all( ) 
+    return todos
 
-@app.put("/check-todo/{task_id}")
-def check_task(task_id:int,db:Session=Depends(get_db)):
+@app.put("/api/check-todo/{task_id}")
+def check_task(*,session:Session = Depends(get_session),task_id:int):
     """Check a task as complete"""
-    todo = db.query(Todos).filter(Todos.id == task_id).first()
-    if todo is None:
+    db_todo = session.get(Todo, task_id)  # Get the todo item from the database
+    if db_todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
-    todo.is_complete = not todo.is_complete
-    db.commit()
-    db.refresh(todo)
-    return todo
+    db_todo.is_complete = not db_todo.is_complete
+    session.add(db_todo)  # Add the updated todo to the session
+    session.commit()
+    session.refresh(db_todo)
+    return db_todo
 
-@app.put("/update-todo/{task_id}")
-def update_todo(task_id:int,text:str,db:Session=Depends(get_db)):
-    print(task_id,text)
+@app.put("/api/update-todo/{task_id}",response_model=TodoRead)
+def update_todo(*,session:Session = Depends(get_session),task_id:int,todo:TodoUpdate):
+    print(task_id,todo)
     """Update Todo Description"""
-    todo = db.query(Todos).filter(Todos.id == task_id).first()
-    if todo is None:
+    db_todo = session.get(Todo,task_id)
+    if db_todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
-    todo.text = text
-    db.commit()
-    db.refresh(todo)
-    return todo
+    todo_data = todo.model_dump(exclude_unset=True)
+    print(todo_data)
+    for key, value in todo_data.items():
+        setattr(db_todo, key, value)
+    print(db_todo)
+    session.add(db_todo)  # Add the updated todo to the session 
+    session.commit()
+    session.refresh(db_todo)
+    return db_todo
 
-@app.delete("/del/{todo_id}")
-def delete_todo(todo_id:int,db:Session=Depends(get_db)):
+@app.delete("/api/del/{todo_id}")
+def delete_todo(*,session:Session = Depends(get_session),todo_id:int):
     """Delete a todo from the database"""
     print(f"This is the id {todo_id}")
-    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+    todo = session.get(Todo,todo_id)
     if todo is None:
         raise HTTPException(status_code=404, detail="Todo not found")
-    db.delete(todo)
-    db.commit()
+    session.delete(todo)
+    session.commit()
     return {"message": "Todo deleted successfully"}
 
-@app.delete("/delete-all")
-def delete_all(db:Session=Depends(get_db)):
+@app.delete("/api/delete-all")
+def delete_all(*,session:Session = Depends(get_session)):
     """Delete all todos from the database"""
-    db.query(Todos).delete()
-    db.commit()
-    return {"message": "All todos deleted successfully"}
+    result = session.exec(delete(Todo))
+    session.commit()
+    return {"message": f"{result.rowcount} todos deleted successfully"}
 
 
 

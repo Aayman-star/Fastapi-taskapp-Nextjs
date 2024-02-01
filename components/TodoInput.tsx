@@ -60,8 +60,8 @@ const TodoInput = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="w-full flex space-x-4">
+    <div className="">
+      <div className="mx-auto  flex space-x-4">
         <div>
           <form
             className="w-full flex items-center space-x-4 mb-10"
@@ -92,7 +92,7 @@ const TodoInput = () => {
       </div>{" "}
       <div>
         <ol className="p-4">
-          {Array.isArray(todoList) ? (
+          {Array.isArray(todoList) && todoList.length > 0 ? (
             todoList.map((item, i) => (
               <TaskDisplay
                 key={item.id}
