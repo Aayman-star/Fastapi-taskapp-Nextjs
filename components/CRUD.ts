@@ -14,6 +14,7 @@ type todo = {
 const BASE_URL = "http://127.0.0.1:8000";
 
 export const sendTodo = async ({ text, isComplete }: Data) => {
+  console.log(text, isComplete);
   const response = await fetch(`${BASE_URL}/api/create-todo`, {
     method: "POST",
     headers: {
@@ -21,7 +22,7 @@ export const sendTodo = async ({ text, isComplete }: Data) => {
     },
     body: JSON.stringify({
       text: text,
-      is_complete: isComplete,
+      is_complete: false,
     }),
   });
   if (response.ok) {
