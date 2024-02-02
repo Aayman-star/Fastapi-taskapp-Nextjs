@@ -15,20 +15,25 @@ const BASE_URL = "http://127.0.0.1:8000";
 
 export const sendTodo = async ({ text, isComplete }: Data) => {
   console.log(text, isComplete);
-  const response = await fetch(`${BASE_URL}/api/create-todo`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      text: text,
-      is_complete: false,
-    }),
-  });
-  if (response.ok) {
-    return response.json();
-  } else {
-    return "Error";
+  try {
+    const response = await fetch(`${BASE_URL}/api/create-todo`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: text,
+        is_complete: false,
+      }),
+    });
+    if (response.ok) {
+      return response.json();
+    } else {
+      return response.status;
+    }
+  } catch (error) {
+    console.log(error);
+    return error;
   }
 };
 export const fetchTodos = async () => {

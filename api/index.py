@@ -1,15 +1,18 @@
 import select
 from fastapi import FastAPI,Body,Depends,HTTPException
 from sqlalchemy.orm import Session
-from models import TodoItem
-from database import engine,Todo,TodoCreate,TodoRead,TodoUpdate
+from db import engine,Todo,TodoCreate,TodoRead,TodoUpdate
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 import uvicorn
 from sqlmodel import Session, delete,select
 from typing import List
+#import auth
+from auth import router, get_current_user
 
 app: FastAPI = FastAPI()
+
+app.include_router(router)
 
 
 app.add_middleware(
@@ -29,6 +32,13 @@ def get_session():
 @app.get("/api/python")
 def hello_world():
     return {"message": "Hello World"}
+
+@app.get("/api/user",status_code = status.HTTP_200_OK)
+def get_user(*,session : Session = Depends(get_session),user = Depends(get_current_user)):
+    """This is to get the current user"""
+    if user is None:
+        raise HTTPException(status_code=404, detail="No user found")
+    return {"User":user}
 
 @app.get("/api",response_model=List[TodoRead])
 def read_todos(*,session:Session=Depends(get_session)):
@@ -113,5 +123,5 @@ def delete_all(*,session:Session = Depends(get_session)):
 
 
 
-if __name__ == "__main__":
-    uvicorn.run("index:app", reload=True)
+# if __name__ == "__main__":
+#     uvicorn.run("index:app", reload=True)
