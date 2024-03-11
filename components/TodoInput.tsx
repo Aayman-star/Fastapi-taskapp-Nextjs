@@ -35,20 +35,23 @@ const TodoInput = () => {
     setTextDisplay(text);
     setText("");
     const response = await sendTodo({ ...singleTask });
-    console.log(response);
+    /**For debugging */
+    // console.log(response);
     //!!After adding new todo refresh the display
     const newList = await fetchTodos();
     setTodoList(newList);
   };
   const handleDelete = async (id: number) => {
-    console.log(`I am here ${id}`);
+    /**For debugging */
+    // console.log(`I am here ${id}`);
     //{ id, text, is_complete }
     const response = await deleteTodo(id);
     const newList = await fetchTodos();
     setTodoList(newList);
   };
   const handleCheck = async (id: number) => {
-    console.log(`I am here in the handleCheck function ${id}`);
+    /**For debugging */
+    // console.log(`I am here in the handleCheck function ${id}`);
     const response = await checkTodo(id);
     const newList = await fetchTodos();
     setTodoList(newList);

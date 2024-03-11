@@ -1,14 +1,14 @@
 import select
 from fastapi import FastAPI,Body,Depends,HTTPException
 from sqlalchemy.orm import Session
-from db import engine,Todo,TodoCreate,TodoRead,TodoUpdate
+from api.db import engine,Todo,TodoCreate,TodoRead,TodoUpdate
 from fastapi.middleware.cors import CORSMiddleware
 from starlette import status
 import uvicorn
 from sqlmodel import Session, delete,select
 from typing import List
 #import auth
-from auth import router, get_current_user
+from api.auth import router, get_current_user
 
 app: FastAPI = FastAPI()
 
@@ -36,7 +36,7 @@ def hello_world():
 @app.get("/api/user",status_code = status.HTTP_200_OK)
 def get_user(*,session : Session = Depends(get_session),user = Depends(get_current_user)):
     """This is to get the current user"""
-    if user is None:
+    if not user:
         raise HTTPException(status_code=404, detail="No user found")
     return {"User":user}
 
@@ -44,8 +44,9 @@ def get_user(*,session : Session = Depends(get_session),user = Depends(get_curre
 def read_todos(*,session:Session=Depends(get_session)):
     """Get all Todos"""
     todos = session.exec(select(Todo).order_by(Todo.id)).all()
-    if todos is None:
+    if not todos:
         raise HTTPException(status_code=404, detail="No todos found")
+        #return {"message":"No todos found"	}
     return todos
 
 
@@ -53,7 +54,7 @@ def read_todos(*,session:Session=Depends(get_session)):
 def get_todo(*,session:Session = Depends(get_session),todo_id:int):
     """Get a single todo from the database"""
     todo = session.get(Todo, todo_id)  # Get the todo item from the database
-    if todo is None:
+    if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     return todo
 
@@ -70,7 +71,7 @@ def create_todo(*,session:Session = Depends(get_session),todo:TodoCreate):
 def get_complete_todos(*,session:Session = Depends(get_session)):
     """Get all complete todos"""
     todos = session.exec(select(Todo).where(Todo.is_complete == True)).all()
-    if todos is None:
+    if not todos:
         raise HTTPException(status_code=404, detail="No todos found")
     return todos
 
@@ -78,7 +79,7 @@ def get_complete_todos(*,session:Session = Depends(get_session)):
 def check_task(*,session:Session = Depends(get_session),task_id:int):
     """Check a task as complete"""
     db_todo = session.get(Todo, task_id)  # Get the todo item from the database
-    if db_todo is None:
+    if not db_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     db_todo.is_complete = not db_todo.is_complete
     session.add(db_todo)  # Add the updated todo to the session
@@ -91,7 +92,7 @@ def update_todo(*,session:Session = Depends(get_session),task_id:int,todo:TodoUp
     print(task_id,todo)
     """Update Todo Description"""
     db_todo = session.get(Todo,task_id)
-    if db_todo is None:
+    if not db_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     todo_data = todo.model_dump(exclude_unset=True)
     print(todo_data)
@@ -108,7 +109,7 @@ def delete_todo(*,session:Session = Depends(get_session),todo_id:int):
     """Delete a todo from the database"""
     print(f"This is the id {todo_id}")
     todo = session.get(Todo,todo_id)
-    if todo is None:
+    if not todo:
         raise HTTPException(status_code=404, detail="Todo not found")
     session.delete(todo)
     session.commit()
